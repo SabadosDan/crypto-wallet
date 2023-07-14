@@ -1,6 +1,7 @@
 package com.cwallet.cryptowallet.domain.dtos;
 
-import jakarta.persistence.*;
+
+import javax.persistence.*;
 
 @MappedSuperclass
 public class BaseEntity {

@@ -4,6 +4,7 @@ import com.cwallet.cryptowallet.controllers.responses.CoinResponse;
 import com.cwallet.cryptowallet.controllers.responses.ListCoinResponse;
 import com.cwallet.cryptowallet.domain.dtos.Coin;
 import com.cwallet.cryptowallet.domain.repositories.CoinRepository;
+import com.cwallet.cryptowallet.exceptions.DuplicateEntityException;
 import com.cwallet.cryptowallet.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,16 @@ public class CoinService {
 
     }
 
-
-
+    public CoinResponse addNewCoin(CoinResponse coinResponse) throws DuplicateEntityException {
+        Optional<Coin> optionalCoin = coinRepository.findByName(coinResponse.getName());
+        // check if there is already a coin with the same name
+        if (optionalCoin.isPresent()) {
+            throw new DuplicateEntityException("Duplicate coin with name " + coinResponse.getName());
+        }
+        // create a Coin with CoinResponse data
+        Coin coin = new Coin(coinResponse.getName(), coinResponse.getValue());
+        // save the Coin entity in repository
+        coinRepository.save(coin);
+        return new CoinResponse(coin.getId(), coin.getName(), coin.getValue());
+    }
 }
