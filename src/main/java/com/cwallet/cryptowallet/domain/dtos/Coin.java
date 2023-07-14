@@ -13,7 +13,6 @@ public class Coin extends BaseEntity{
     @Column
     private Double value;
 
-
     public Coin(String name, Double value) {
         this.name = name;
         this.value = value;
