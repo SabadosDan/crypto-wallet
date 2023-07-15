@@ -1,0 +1,275 @@
+{
+	"info": {
+		"_postman_id": "3c491b94-4f4b-453d-96c2-feedb319d9b8",
+		"name": "Crypto-wallet",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26804393"
+	},
+	"item": [
+		{
+			"name": "Add Coin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"GRT\",\r\n    \"value\" : 1000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/coins/add",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"coins",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Coins",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/coins/",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"coins",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Coin by Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/coins/5",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"coins",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Wallet",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"Wallet Dan\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/wallets/add",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Wallets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/wallets",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Wallet by Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/wallets/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Show all coins from a wallet",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/wallets/show_coins/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets",
+						"show_coins",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Show values for a wallet",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/wallets/values/1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets",
+						"values",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buy Coin",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"walletId\" : 1,\r\n    \"coinId\": 14,\r\n    \"amount\" : 5\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/wallets/buy",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets",
+						"buy"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Transactions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/transactions",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Transactions Greater Than a Value",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/transactions/greater_than/2525",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"transactions",
+						"greater_than",
+						"2525"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Exchange Coins",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"sellCoinId\" : 13,\r\n    \"buyCoinId\" : 14,\r\n    \"walletId\" : 1,\r\n    \"amount\" : 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/wallets/exchange",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets",
+						"exchange"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
