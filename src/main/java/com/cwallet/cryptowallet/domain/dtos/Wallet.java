@@ -13,6 +13,10 @@ public class Wallet extends BaseEntity{
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CoinAmount> coinAmounts = new ArrayList<>();
 
+    public Wallet(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }

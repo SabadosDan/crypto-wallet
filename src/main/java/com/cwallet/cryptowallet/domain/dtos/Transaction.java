@@ -18,6 +18,10 @@ public class Transaction extends BaseEntity{
     @Column(name = "total_value")
     private Double totalValue;
 
+    public Transaction() {
+
+    }
+
     public String getDate() {
         return date;
     }
