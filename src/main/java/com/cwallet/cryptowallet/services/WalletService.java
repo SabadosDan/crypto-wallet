@@ -1,16 +1,22 @@
 package com.cwallet.cryptowallet.services;
 
+import com.cwallet.cryptowallet.controllers.requests.BuyCoinRequest;
 import com.cwallet.cryptowallet.controllers.responses.*;
+import com.cwallet.cryptowallet.domain.dtos.Coin;
 import com.cwallet.cryptowallet.domain.dtos.CoinAmount;
+import com.cwallet.cryptowallet.domain.dtos.Transaction;
 import com.cwallet.cryptowallet.domain.dtos.Wallet;
 import com.cwallet.cryptowallet.domain.repositories.CoinAmountRepository;
 import com.cwallet.cryptowallet.domain.repositories.CoinRepository;
+import com.cwallet.cryptowallet.domain.repositories.TransactionRepository;
 import com.cwallet.cryptowallet.domain.repositories.WalletRepository;
 import com.cwallet.cryptowallet.exceptions.DuplicateEntityException;
 import com.cwallet.cryptowallet.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,14 +26,17 @@ public class WalletService {
     private final WalletRepository walletRepository;
     private final CoinRepository coinRepository;
     private final CoinAmountRepository coinAmountRepository;
+    private final TransactionRepository transactionRepository;
 
     @Autowired
     public WalletService(WalletRepository walletRepository,
                          CoinRepository coinRepository,
-                         CoinAmountRepository coinAmountRepository){
+                         CoinAmountRepository coinAmountRepository,
+                         TransactionRepository transactionRepository){
         this.walletRepository = walletRepository;
         this.coinRepository = coinRepository;
         this.coinAmountRepository = coinAmountRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     /** return a list with all wallets */
@@ -97,5 +106,52 @@ public class WalletService {
         }
 
         return new WalletValueResponse(totalValuesForEachCoin, totalWalletValue);
+    }
+
+    /** save a new CoinAmount in a wallet, create a new Transactions
+     * and return a BuyCoinResponse type data
+     * param: BuyCoinRequest */
+    public BuyCoinResponse buyCoin(BuyCoinRequest buyCoinRequest) throws NotFoundException{
+        Optional<Wallet> optionalWallet = walletRepository.findById(buyCoinRequest.getWalletId());
+        Optional<Coin> optionalCoin = coinRepository.findById(buyCoinRequest.getCoinId());
+        if(optionalWallet.isEmpty()){
+            throw new NotFoundException("Wallet not found!");
+        }
+        if(optionalCoin.isEmpty()){
+            throw new NotFoundException("Coin not found!");
+        }
+
+        Coin coin = optionalCoin.get();
+        Wallet wallet = optionalWallet.get();
+        // total value of purchase
+        Double totalValue = coin.getValue() * buyCoinRequest.getAmount();
+        // create the date data for Transaction
+        LocalDateTime myDateObj = LocalDateTime.now();
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String formattedDate = myDateObj.format(myFormatObj);
+        // create and save the transaction to the repository
+        Transaction transaction = new Transaction(formattedDate, coin, buyCoinRequest.getAmount(),totalValue);
+        transactionRepository.save(transaction);
+        // get or create coin amount for the specific coin and wallet and update it
+        CoinAmount coinAmount = getOrCreateCoinAmount(coin, wallet);
+        coinAmount.setAmount(coinAmount.getAmount() + buyCoinRequest.getAmount());
+        coinAmountRepository.save(coinAmount);
+
+        String status = "success";
+        String message = "You bought " + buyCoinRequest.getAmount() + coin.getName();
+
+        CoinAmountResponse coinAmountResponse = new CoinAmountResponse(coin, coinAmount.getAmount());
+        return new BuyCoinResponse(coinAmountResponse, status, message);
+    }
+
+    /** returns an existing or a new coin amount
+     * params: Coin, Wallet */
+    public CoinAmount getOrCreateCoinAmount(Coin coin, Wallet wallet){
+        CoinAmount coinAmount = coinAmountRepository.findByWalletAndCoin(wallet, coin);
+        if (coinAmount == null){
+            // create new coin amount if it doesn't exist already
+            coinAmount = new CoinAmount(wallet, coin, 0d);
+        }
+        return coinAmount;
     }
 }

@@ -1,5 +1,6 @@
 package com.cwallet.cryptowallet.controllers;
 
+import com.cwallet.cryptowallet.controllers.requests.BuyCoinRequest;
 import com.cwallet.cryptowallet.controllers.responses.BaseResponse;
 import com.cwallet.cryptowallet.controllers.responses.ErrorResponse;
 import com.cwallet.cryptowallet.controllers.responses.WalletResponse;
@@ -58,6 +59,15 @@ public class WalletController {
     public ResponseEntity<BaseResponse> totalValueOfCoinsFromWallet(@PathVariable("id") Long id){
         try {
             return new ResponseEntity<>(walletService.totalValueOfCoinsFromWallet(id), HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping(value = "/buy")
+    public ResponseEntity<BaseResponse> buyCoin(@RequestBody BuyCoinRequest buyCoinRequest){
+        try{
+            return new ResponseEntity<>(walletService.buyCoin(buyCoinRequest), HttpStatus.OK);
         } catch (NotFoundException e) {
             return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
