@@ -1,7 +1,10 @@
 package com.cwallet.cryptowallet.services;
 
+import com.cwallet.cryptowallet.controllers.responses.AllCoinsFromWalletResponse;
+import com.cwallet.cryptowallet.controllers.responses.CoinAmountResponse;
 import com.cwallet.cryptowallet.controllers.responses.ListWalletResponse;
 import com.cwallet.cryptowallet.controllers.responses.WalletResponse;
+import com.cwallet.cryptowallet.domain.dtos.CoinAmount;
 import com.cwallet.cryptowallet.domain.dtos.Wallet;
 import com.cwallet.cryptowallet.domain.repositories.CoinAmountRepository;
 import com.cwallet.cryptowallet.domain.repositories.CoinRepository;
@@ -64,4 +67,17 @@ public class WalletService {
         return new WalletResponse(wallet.getId(), wallet.getName());
     }
 
+    /** return all coins from a wallet, showing the coin details and the amount  */
+    public AllCoinsFromWalletResponse getAllCoinsFromWalletById(Long id) throws NotFoundException{
+        Optional<Wallet> optionalWallet = walletRepository.findById(id);
+        if(optionalWallet.isEmpty()){
+            throw new NotFoundException("Wallet not found, try a different id");
+        }
+        List<CoinAmount> coinAmounts = coinAmountRepository.findAllByWallet(optionalWallet.get());
+        List<CoinAmountResponse> coinAmountResponses = new ArrayList<>();
+        for (CoinAmount coinAmount : coinAmounts){
+            coinAmountResponses.add(new CoinAmountResponse(coinAmount.getCoin(), coinAmount.getAmount()));
+        }
+        return new AllCoinsFromWalletResponse(coinAmountResponses);
+    }
 }

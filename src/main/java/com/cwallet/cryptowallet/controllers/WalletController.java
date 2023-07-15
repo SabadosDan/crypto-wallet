@@ -6,6 +6,7 @@ import com.cwallet.cryptowallet.controllers.responses.WalletResponse;
 import com.cwallet.cryptowallet.exceptions.DuplicateEntityException;
 import com.cwallet.cryptowallet.exceptions.NotFoundException;
 import com.cwallet.cryptowallet.services.WalletService;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,15 @@ public class WalletController {
         try {
             return new ResponseEntity<>(walletService.addNewWallet(walletResponse), HttpStatus.OK);
         } catch (DuplicateEntityException e) {
+            return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping(value = "/show_coins/{id}")
+    public ResponseEntity<BaseResponse> getAllCoinsFromWalletById(@PathVariable("id") Long id){
+        try {
+            return new ResponseEntity<>(walletService.getAllCoinsFromWalletById(id), HttpStatus.OK);
+        } catch (NotFoundException e) {
             return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
