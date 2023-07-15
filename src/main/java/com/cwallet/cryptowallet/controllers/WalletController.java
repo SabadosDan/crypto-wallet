@@ -1,10 +1,12 @@
 package com.cwallet.cryptowallet.controllers;
 
 import com.cwallet.cryptowallet.controllers.requests.BuyCoinRequest;
+import com.cwallet.cryptowallet.controllers.requests.ExchangeCoinsRequest;
 import com.cwallet.cryptowallet.controllers.responses.BaseResponse;
 import com.cwallet.cryptowallet.controllers.responses.ErrorResponse;
 import com.cwallet.cryptowallet.controllers.responses.WalletResponse;
 import com.cwallet.cryptowallet.exceptions.DuplicateEntityException;
+import com.cwallet.cryptowallet.exceptions.NotEnoughFundsException;
 import com.cwallet.cryptowallet.exceptions.NotFoundException;
 import com.cwallet.cryptowallet.services.WalletService;
 import org.aspectj.weaver.ast.Not;
@@ -69,6 +71,15 @@ public class WalletController {
         try{
             return new ResponseEntity<>(walletService.buyCoin(buyCoinRequest), HttpStatus.OK);
         } catch (NotFoundException e) {
+            return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping(value = "/exchange")
+    public ResponseEntity<BaseResponse> exchangeCoins(@RequestBody ExchangeCoinsRequest exchangeCoinsRequest){
+        try{
+            return new ResponseEntity<>(walletService.exchangeCoins(exchangeCoinsRequest), HttpStatus.OK);
+        } catch (NotFoundException | NotEnoughFundsException e) {
             return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }

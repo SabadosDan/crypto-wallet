@@ -1,6 +1,7 @@
 package com.cwallet.cryptowallet.services;
 
 import com.cwallet.cryptowallet.controllers.requests.BuyCoinRequest;
+import com.cwallet.cryptowallet.controllers.requests.ExchangeCoinsRequest;
 import com.cwallet.cryptowallet.controllers.responses.*;
 import com.cwallet.cryptowallet.domain.dtos.Coin;
 import com.cwallet.cryptowallet.domain.dtos.CoinAmount;
@@ -11,6 +12,7 @@ import com.cwallet.cryptowallet.domain.repositories.CoinRepository;
 import com.cwallet.cryptowallet.domain.repositories.TransactionRepository;
 import com.cwallet.cryptowallet.domain.repositories.WalletRepository;
 import com.cwallet.cryptowallet.exceptions.DuplicateEntityException;
+import com.cwallet.cryptowallet.exceptions.NotEnoughFundsException;
 import com.cwallet.cryptowallet.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -138,7 +140,7 @@ public class WalletService {
         coinAmountRepository.save(coinAmount);
 
         String status = "success";
-        String message = "You bought " + buyCoinRequest.getAmount() + coin.getName();
+        String message = String.format("You bought %s %s.", buyCoinRequest.getAmount(), coin.getName());
 
         CoinAmountResponse coinAmountResponse = new CoinAmountResponse(coin, coinAmount.getAmount());
         return new BuyCoinResponse(coinAmountResponse, status, message);
@@ -153,5 +155,62 @@ public class WalletService {
             coinAmount = new CoinAmount(wallet, coin, 0d);
         }
         return coinAmount;
+    }
+
+    /** exchange 2 coins , sell a coin amount for a given amount of another coin */
+    public ExchangeCoinsResponse exchangeCoins(ExchangeCoinsRequest exchangeCoinsRequest) throws NotFoundException,
+            NotEnoughFundsException{
+        // buyCoin - the coin we want to buy
+        // sellCoin - the coin we want to sell
+        Optional<Coin> optBuyCoin = coinRepository.findById(exchangeCoinsRequest.getBuyCoinId());
+        Optional<Coin> optSellCoin = coinRepository.findById(exchangeCoinsRequest.getSellCoinId());
+        Optional<Wallet> optionalWallet = walletRepository.findById(exchangeCoinsRequest.getWalletId());
+        if (optBuyCoin.isEmpty()){
+            throw new NotFoundException("The coin you want to buy doesn't exist. Please try other id.");
+        }
+        if (optSellCoin.isEmpty()){
+            throw new NotFoundException("The coin you want to sell doesn't exist. Please try other id.");
+        }
+        if (optionalWallet.isEmpty()){
+            throw new NotFoundException("Wallet not found!");
+        }
+
+        Coin buyCoin = optBuyCoin.get();
+        Coin sellCoin = optSellCoin.get();
+        Wallet wallet = optionalWallet.get();
+
+        CoinAmount coinAmountToSell = coinAmountRepository.findByWalletAndCoin(wallet, sellCoin);
+        // if coinAmountToSell == null that means there is no amount of the coin you want to sell
+        if (coinAmountToSell == null) {
+            throw new NotEnoughFundsException("Not enough funds. You have 0 coin amount of " + sellCoin.getName());
+        }
+
+        // total value of the coins you want to buy
+        double valueOfCoinsToBuyInUsd = buyCoin.getValue() * exchangeCoinsRequest.getAmount();
+        // total value of the coins you have in wallet that you want to sell
+        double valueOfCoinsToSellInUsd = sellCoin.getValue() * coinAmountToSell.getAmount();
+
+        if (valueOfCoinsToBuyInUsd > valueOfCoinsToSellInUsd) {
+            throw new NotEnoughFundsException("Not enough funds to buy the desired coin amount");
+        }
+
+        CoinAmount desiredCoinAmount = getOrCreateCoinAmount(buyCoin, wallet);
+        double amountToSell = valueOfCoinsToBuyInUsd / coinAmountToSell.getCoin().getValue();
+
+        // update the coin amounts of the coin we sell and the coin we buy
+        coinAmountToSell.setAmount((valueOfCoinsToSellInUsd - valueOfCoinsToBuyInUsd) /
+                coinAmountToSell.getCoin().getValue());
+        desiredCoinAmount.setAmount(desiredCoinAmount.getAmount() +
+                valueOfCoinsToBuyInUsd/desiredCoinAmount.getCoin().getValue());
+        coinAmountRepository.save(coinAmountToSell);
+        coinAmountRepository.save(desiredCoinAmount);
+
+        String status = "success";
+        String message = String.format("You exchanged %s %s for %s %s .",
+                amountToSell, sellCoin.getName(), exchangeCoinsRequest.getAmount(), buyCoin.getName());
+
+        return new ExchangeCoinsResponse(new CoinAmountResponse(desiredCoinAmount.getCoin(),
+                                                                desiredCoinAmount.getAmount())
+                , new CoinAmountResponse(coinAmountToSell.getCoin(), coinAmountToSell.getAmount()), status, message);
     }
 }
