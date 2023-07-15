@@ -1,9 +1,6 @@
 package com.cwallet.cryptowallet.services;
 
-import com.cwallet.cryptowallet.controllers.responses.AllCoinsFromWalletResponse;
-import com.cwallet.cryptowallet.controllers.responses.CoinAmountResponse;
-import com.cwallet.cryptowallet.controllers.responses.ListWalletResponse;
-import com.cwallet.cryptowallet.controllers.responses.WalletResponse;
+import com.cwallet.cryptowallet.controllers.responses.*;
 import com.cwallet.cryptowallet.domain.dtos.CoinAmount;
 import com.cwallet.cryptowallet.domain.dtos.Wallet;
 import com.cwallet.cryptowallet.domain.repositories.CoinAmountRepository;
@@ -79,5 +76,26 @@ public class WalletService {
             coinAmountResponses.add(new CoinAmountResponse(coinAmount.getCoin(), coinAmount.getAmount()));
         }
         return new AllCoinsFromWalletResponse(coinAmountResponses);
+    }
+
+    /** return total values for each coin and total value of the wallet*/
+    public WalletValueResponse totalValueOfCoinsFromWallet(Long id) throws NotFoundException{
+        Optional<Wallet> optionalWallet = walletRepository.findById(id);
+        if(optionalWallet.isEmpty()){
+            throw new NotFoundException("Wallet not found, try a different id");
+        }
+
+        Wallet wallet =optionalWallet.get();
+        List<CoinAmount> coinAmounts = coinAmountRepository.findAllByWallet(wallet);
+        List<TotalValueForACoinResponse> totalValuesForEachCoin = new ArrayList<>();
+        Double totalWalletValue = 0d;
+        for (CoinAmount coinAmount : coinAmounts) {
+            String nameCoin = coinAmount.getCoin().getName();
+            Double totalValue = coinAmount.getAmount() * coinAmount.getCoin().getValue();
+            totalValuesForEachCoin.add(new TotalValueForACoinResponse(nameCoin, totalValue));
+            totalWalletValue += totalValue;
+        }
+
+        return new WalletValueResponse(totalValuesForEachCoin, totalWalletValue);
     }
 }
