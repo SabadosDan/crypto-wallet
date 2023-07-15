@@ -14,7 +14,7 @@ public class CoinAmount extends BaseEntity{
     @ManyToOne
     @JoinColumn(name = "coin_id")
     private Coin coin;
-    
+
     @Column
     private Double amount;
 

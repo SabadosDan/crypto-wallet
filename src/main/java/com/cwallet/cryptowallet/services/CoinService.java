@@ -22,6 +22,7 @@ public class CoinService {
         this.coinRepository = coinRepository;
     }
 
+    /** return a list with all coins */
     public ListCoinResponse getAllCoins() {
         List<Coin> coinList = this.coinRepository.findAll();
         List<CoinResponse> coinResponseList = new ArrayList<>();
@@ -31,6 +32,7 @@ public class CoinService {
         return new ListCoinResponse(coinResponseList);
     }
 
+    /** return coin by id */
     public CoinResponse getCoinById(Long id) throws NotFoundException {
         Optional<Coin> optionalCoin = coinRepository.findById(id);
         if(optionalCoin.isEmpty()){
@@ -41,6 +43,7 @@ public class CoinService {
 
     }
 
+    /** add new coin to the repository */
     public CoinResponse addNewCoin(CoinResponse coinResponse) throws DuplicateEntityException {
         Optional<Coin> optionalCoin = coinRepository.findByName(coinResponse.getName());
         // check if there is already a coin with the same name
